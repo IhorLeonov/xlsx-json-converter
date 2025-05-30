@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://xlsx-json-converter.vercel.app
+
+# Sitemaps
+Sitemap: https://xlsx-json-converter.vercel.app/sitemap.xml
