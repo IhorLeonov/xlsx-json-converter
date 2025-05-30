@@ -2,6 +2,8 @@
 
 import Result from "@/components/result";
 import UploadForm from "@/components/uploadForm";
+import Image from "next/image";
+import Link from "next/link";
 
 import { useState } from "react";
 
@@ -36,6 +38,18 @@ export default function Home() {
           <UploadForm handleResult={handleResult} />
           <Result data={result} />
         </div>
+
+        <nav className="absolute bottom-4 right-4 font-mono font-medium text-center ">
+          <Link
+            href="https://github.com/IhorLeonov/xlsx-json-converter"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex gap-1 items-center justify-center"
+          >
+            <Image src="/github.svg" width={20} height={20} alt="github icon" />{" "}
+            code
+          </Link>
+        </nav>
       </main>
     </div>
   );
