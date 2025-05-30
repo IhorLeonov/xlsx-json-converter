@@ -1,29 +1,17 @@
 "use client";
-// import { format } from "date-fns";
 
+import { Row, UploadRequest } from "@/app/page";
 import { FormEvent, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
-type Row = {
-  date: number;
-  email: string;
-  name: string;
-  number: string;
-  secondName: string;
-  source: string;
-  status: string;
+type UploadFormProps = {
+  handleResult: (data: Row[] | null) => void;
 };
 
-type UploadRequest = {
-  sheetName: string;
-  rows: Row[];
-}[];
-
-export default function UploadForm() {
+export default function UploadForm({ handleResult }: UploadFormProps) {
   const [xlsxFile, setXlsxFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [jsonData, setJsonData] = useState<Row[] | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +22,7 @@ export default function UploadForm() {
     setXlsxFile(file);
   };
 
-  const handlePickImage = () => {
+  const handleInputClick = () => {
     fileInputRef?.current?.click();
   };
 
@@ -54,67 +42,55 @@ export default function UploadForm() {
         body: formData,
       });
 
+      if (!uploadRequest.ok) {
+        const error = await uploadRequest.json();
+        setError("Something went wrong while converting the file");
+        console.error(error);
+        return;
+      }
       const response = (await uploadRequest.json()) as UploadRequest;
 
-      setJsonData(response?.map((item) => item.rows).flat() || null);
-
-      console.log("response", response);
-      setUploading(false);
+      handleResult(response?.map((item) => item.rows).flat() || null);
     } catch (e) {
       console.log("Trouble uploading file", e);
+    } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <form className="flex flex-col">
-        <input
-          ref={fileInputRef}
-          className="sr-only"
-          type="file"
-          accept=".xlsx"
-          onChange={handleFileChange}
-        />
+    <form className="flex flex-col">
+      <input
+        ref={fileInputRef}
+        className="sr-only"
+        type="file"
+        accept=".xlsx"
+        onChange={handleFileChange}
+      />
 
+      <div className="flex gap-2 items-center justify-center">
         <button
           type="button"
-          className={twMerge("border w-[140px] rounded-sm p-1 cursor-pointer")}
-          onClick={handlePickImage}
+          className={twMerge(
+            "border border-gray-400 h-10 w-[140px] rounded-md p-1 cursor-pointer",
+            xlsxFile && "bg-green-300 border-none"
+          )}
+          onClick={handleInputClick}
         >
           {xlsxFile ? xlsxFile.name : "Upload xlsx file"}
         </button>
 
         <button
           disabled={!xlsxFile || uploading}
-          className="mt-2 w-[140px] border disabled:!border-none disabled:cursor-default cursor-pointer border-black rounded-sm p-1 text-white bg-gray-400"
+          className="h-10 w-[140px] border disabled:!border-none transition-colors text-gray-600 hover:text-black disabled:text-gray-400 disabled:cursor-default cursor-pointer border-gray-400 rounded-md p-1  bg-gray-200"
           onClick={handleConvertToJson}
         >
           Convert to json
         </button>
+      </div>
 
-        {uploading && <p>Uploading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-      </form>
-
-      {jsonData && (
-        <>
-          <ul className="mt-4">
-            {jsonData?.slice(0, 10).map((row) => (
-              <li key={row.email}>
-                <p className="flex justify-between gap-2">
-                  {Array.from(Object.entries(row)).map(([key, value]) => (
-                    <span key={key} className="text-sm">
-                      {value}
-                    </span>
-                  ))}
-                </p>
-              </li>
-            ))}
-          </ul>
-          <p>.......</p>
-        </>
-      )}
-    </div>
+      {uploading && <p className="mt-2 text-center">Processing...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+    </form>
   );
 }
