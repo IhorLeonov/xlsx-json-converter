@@ -1,8 +1,8 @@
 
 
-## Getting Started
+## Usage
 
-*Upload xlsx file with headers and click "Convert to json"
+Upload xlsx file with headers and click "Convert to json"
 
 ## Source
 
